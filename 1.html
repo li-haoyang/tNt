@@ -1,0 +1,25 @@
+<head>
+</head>
+<script>
+
+function banana(){
+    console.log("sdfdsf");
+    
+    if (window.Notification && Notification.permission !== "granted") {
+        Notification.requestPermission(function (status) {
+      if (Notification.permission !== status) {
+        Notification.permission = status;
+      }
+      for(var i=0;i<10;i++)
+      var noti= new Notification("hello",{icon:"https://migu.plus/t/pic/bzicon.jpg",tag: 'soManyNotification'});
+      noti.onclick = function(event) {
+  event.preventDefault(); // prevent the browser from focusing the Notification's tab
+  window.open('http://www.mozilla.org', '_blank');
+}
+    });};
+}
+ 
+</script>
+<body>
+<p>sfadsfsed</p>
+</body>

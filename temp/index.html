@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <title>Task and Time</title>
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+   <script src="./jquery-3.4.1.min.js"></script>
+   <!--<link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">-->
+   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+   <script src='./jBox.all.min.js'></script>
+   <script src='./materialize.min.js'></script>
+   <link rel='stylesheet' href='./jBox.all.min.css' type='text/css' />
+   <link rel="stylesheet" href="https://cdn.staticfile.org/ionicons/2.0.1/css/ionicons.min.css">
+   <link rel="stylesheet" href="./style.css">
+   <link rel="stylesheet" href="./materialize.css">
+   <link rel="stylesheet" href="./timetable.css" type="text/css"/>
+   <script src="./todo.js"></script>
+   <script src="./timetable.js"></script>
+   <script src="./noti.js"></script>
+</head>
+
+<body style="position: relative;">
+   <div class="mobile-wrapper" style="float: left;width:400px;">
+      <header class="header">
+         <div class="container">
+            <div class="dropdown-trigger menu-toggle" data-target='dropdown_about'>
+               <div>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+               </div>
+            </div>
+            <i class="icon ion-quote"></i>
+            <span id='quote_content'>欢迎回来</span>
+            <p class='detail' id='quote_author'>课程手帐</p>
+            <ul id='dropdown_about' class='dropdown-content'>
+               <li><a onclick="course_parse_jbox_window();">导入课程表</a></li>
+               <li><a onclick="(function(){console.log(task_json);console.log(course_json); jbox_notice_1('已经导出课程以及计划，可以用F12打开控制台来进行确认',1,'left','fancy');}())">导出数据</a></li>
+               <li><a data-confirm onclick="clear_all();">重置所有数据</a></li>
+               <li class="divider" tabindex="-1"></li>
+               <li><a onclick="$('#timetable_bg').click();">更换背景</a></li>
+               <li><a onclick="trigger_noti_course();">调整上下课铃</a></li>
+               <li><a onclick="trigger_noti_near_course();">调整课程提醒铃</a></li>
+               <li><a onclick="noti_permit();">重新获取提醒</a></li>
+            </ul>
+         </div>
+      </header>
+      <section class="today-box" id="today-box">
+         <span class="breadcrumb">Today</span>
+         <h3 class="date-title">May 15, 2018</h3>
+         <div id="nocv_panel" style="display: none;">
+            <div id='ncov_info' class='ncov_info'>
+               <div class='ncov_info_line'>
+                  <div class='ncov_info_item'>
+                     <p class='ncov_info_item_title'>国内确诊总数</p>
+                     <p class='ncov_info_item_num' id='confirmedCount'>-</p>
+                  </div>
+                  <div class='ncov_info_item' >
+                     <p class='ncov_info_item_title'>国际确诊总数</p>
+                     <p class='ncov_info_item_num' id='foreignconfirmedCount'>-</p>
+                  </div>
+               </div>
+
+               <div class='ncov_info_line'>
+                  <div class='ncov_info_item' >
+                     <p class='ncov_info_item_title'>昨日国内新增确诊</p>
+                     <p class='ncov_info_item_num' id='confirmedIncr'>-</p>
+                  </div>
+                  <div class='ncov_info_item' >
+                     <p class='ncov_info_item_title'>昨日国际新增确诊</p>
+                     <p class='ncov_info_item_num' id='foreignconfirmedIncr'>-</p>
+                  </div>
+               </div>
+               <div class='ncov_info_bg'></div>
+            </div>
+            <div id="nocv_news" class="nocv_news">
+               <div id="nocv_news_wrapper" class="nocv_news_wrapper" style="top:0px;"></div>
+            </div>
+         </div>
+         <div class="plus-icon" onauxclick="window.open('https://yq-mshow.eagsit.com/eagsit/yq', '_blank');">
+            <i class="ion ion-ios-plus" style="color:#827bc5;"></i>
+         </div>
+      </section>
+      <style>
+      </style>
+      <section class="upcoming-events">
+         <div class="container">
+            <h3>
+               我的计划
+            </h3>
+            <div class="events-wrapper">
+            </div>
+            <button class="add-event-button">
+               <span class="add-event-button__title" onclick="task_edit_window(-1);">添加计划</span>
+               <span class="add-event-button__icon" onclick="task_clear_all_confirm();">
+                  <i class="ion ion-android-delete"></i>
+               </span>
+            </button>
+         </div>
+      </section>
+   </div>
+   <div class='timetable' >
+      <div id='iput_bg' style="display: none;">
+         <input type="file" accept=".jpg;.png;.gif;.webmp" id="timetable_bg" onchange="changebg();">
+     </div>
+ 
+     <div id="coursesTable ">
+         <div id="courseWrapper" style="position: relative; padding-left: 40px; border: 1px solid rgb(219, 219, 219);">
+             <div class="Courses-head" id="Courses-head" style="overflow: hidden;">
+                 <div  class="Courses-head-1"
+                     style="float: left; box-sizing: border-box; white-space: nowrap; width: 14.28%;">周一</div>
+                 <div class="Courses-head-2"
+                     style="float: left; box-sizing: border-box; white-space: nowrap; width: 14.28%;">周二</div>
+                 <div class="Courses-head-3"
+                     style="float: left; box-sizing: border-box; white-space: nowrap; width: 14.28%;">周三</div>
+                 <div class="Courses-head-4"
+                     style="float: left; box-sizing: border-box; white-space: nowrap; width: 14.28%;">周四</div>
+                 <div class="Courses-head-4"
+                     style="float: left; box-sizing: border-box; white-space: nowrap; width: 14.28%;">周五</div>
+                 <div class="Courses-head-4 weekend"
+                     style="float: left; box-sizing: border-box; white-space: nowrap; width: 14.28%;">周六</div>
+                 <div class="Courses-head-5 weekend"
+                     style="float: left; box-sizing: border-box; white-space: nowrap; width: 14.28%;">周日</div>
+             </div>
+             <div class="Courses-content" id="Courses-content" >
+                 <ul class="stage_1" style="list-style: none; padding: 0px; margin: 0px; min-height: 50px;">
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                 </ul>
+                 <ul class="stage_2" style="list-style: none; padding: 0px; margin: 0px; min-height: 50px;">
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                 </ul>
+                 <ul class="stage_3" style="list-style: none; padding: 0px; margin: 0px; min-height: 50px;">
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                 </ul>
+                 <ul class="stage_4" style="list-style: none; padding: 0px; margin: 0px; min-height: 50px;">
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                 </ul>
+                 <ul class="stage_5" style="list-style: none; padding: 0px; margin: 0px; min-height: 50px;">
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                 </ul>
+                 <ul class="stage_6" style="list-style: none; padding: 0px; margin: 0px; min-height: 50px;">
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                 </ul>
+                 <ul class="stage_7" style="list-style: none; padding: 0px; margin: 0px; min-height: 50px;">
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                 </ul>
+                 <ul class="stage_8" style="list-style: none; padding: 0px; margin: 0px; min-height: 50px;">
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                 </ul>
+                 <ul class="stage_9" style="list-style: none; padding: 0px; margin: 0px; min-height: 50px;">
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                 </ul>
+                 <ul class="stage_10" style="list-style: none; padding: 0px; margin: 0px; min-height: 50px;">
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                 </ul>
+                 <ul class="stage_11" style="list-style: none; padding: 0px; margin: 0px; min-height: 50px;">
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                 </ul>
+                 <ul class="stage_12" style="list-style: none; padding: 0px; margin: 0px; min-height: 50px;">
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                 </ul>
+                 <ul class="stage_13" style="list-style: none; padding: 0px; margin: 0px; min-height: 50px;">
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                     <li style="float: left; width: 14.28%; height: 50px; box-sizing: border-box; position: relative;" class="weekend"></li>
+                 </ul>
+                 <div class="Courses-content-bg"id="Courses-content-bg" ></div>
+             </div>
+             <div class="Courses-leftHand" style="position: absolute; left: 0px; top: 0px; width: 40px;">
+                 <div class="left-hand-TextDom" style="height: 29px; box-sizing: border-box;overflow: hidden;"><a id="timetable_week_button" style="position: absolute;top:0px;left: 5px;font-size: small;letter-spacing:1px;"onclick="timetable_weekend_trigger();"class="waves-effect waves-teal btn-flat  btn-small"><span style="position: absolute;top:0px;left: 1px;font-size: small;letter-spacing:1px;white-space: nowrap;">切换<span></a></div>
+                 <div class="left-hand-1" style="width: 100%; height: 50px; box-sizing: border-box;">
+                     <p class="left-hand-name" style="margin: 0px;">08:00</p>
+                     <p class="left-hand-index" style="margin: 0px;">1</p>
+                 </div>
+                 <div class="left-hand-2" style="width: 100%; height: 50px; box-sizing: border-box;">
+                     <p class="left-hand-name" style="margin: 0px;">08:50</p>
+                     <p class="left-hand-index" style="margin: 0px;">2</p>
+                 </div>
+                 <div class="left-hand-3" style="width: 100%; height: 50px; box-sizing: border-box;">
+                     <p class="left-hand-name" style="margin: 0px;">09:50</p>
+                     <p class="left-hand-index" style="margin: 0px;">3</p>
+                 </div>
+                 <div class="left-hand-4" style="width: 100%; height: 50px; box-sizing: border-box;">
+                     <p class="left-hand-name" style="margin: 0px;">10:40</p>
+                     <p class="left-hand-index" style="margin: 0px;">4</p>
+                 </div>
+                 <div class="left-hand-5" style="width: 100%; height: 50px; box-sizing: border-box;">
+                     <p class="left-hand-name" style="margin: 0px;">11:30</p>
+                     <p class="left-hand-index" style="margin: 0px;">5</p>
+                 </div>
+                 <div class="left-hand-6" style="width: 100%; height: 50px; box-sizing: border-box;">
+                     <p class="left-hand-name" style="margin: 0px;">14:05</p>
+                     <p class="left-hand-index" style="margin: 0px;">6</p>
+                 </div>
+                 <div class="left-hand-7" style="width: 100%; height: 50px; box-sizing: border-box;">
+                     <p class="left-hand-name" style="margin: 0px;">14:55</p>
+                     <p class="left-hand-index" style="margin: 0px;">7</p>
+                 </div>
+                 <div class="left-hand-8" style="width: 100%; height: 50px; box-sizing: border-box;">
+                     <p class="left-hand-name" style="margin: 0px;">15:55</p>
+                     <p class="left-hand-index" style="margin: 0px;">8</p>
+                 </div>
+                 <div class="left-hand-9" style="width: 100%; height: 50px; box-sizing: border-box;">
+                     <p class="left-hand-name" style="margin: 0px;">16:40</p>
+                     <p class="left-hand-index" style="margin: 0px;">9</p>
+                 </div>
+                 <div class="left-hand-10" style="width: 100%; height: 50px; box-sizing: border-box;">
+                     <p class="left-hand-name" style="margin: 0px;">17:30</p>
+                     <p class="left-hand-index" style="margin: 0px;">10</p>
+                 </div>
+                 <div class="left-hand-11" style="width: 100%; height: 50px; box-sizing: border-box;">
+                     <p class="left-hand-name" style="margin: 0px;">18:30</p>
+                     <p class="left-hand-index" style="margin: 0px;">11</p>
+                 </div>
+                 <div class="left-hand-12" style="width: 100%; height: 50px; box-sizing: border-box;">
+                     <p class="left-hand-name" style="margin: 0px;">19:20</p>                    
+ <p class="left-hand-index" style="margin: 0px;">12</p>
+
+                 </div>
+                 <div class="left-hand-13" style="width: 100%; height: 50px; box-sizing: border-box;">
+                     <p class="left-hand-name" style="margin: 0px;">20:10</p>
+                     <p class="left-hand-index" style="margin: 0px;">13</p>
+                 </div>
+             </div>
+         </div>
+     </div>
+     </div>
+   </div>
+</body>
+</html>
